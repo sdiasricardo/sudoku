@@ -35,17 +35,14 @@ def remove(bo):
             count -= 1
 
 
-bo = [[0 for i in range(9)] for i in range(9)]
+def generate_puzzle():
+    bo = [[0 for i in range(9)] for i in range(9)]
+    generate_solution(bo)
+    remove(bo)
+    return bo
 
+bo = generate_puzzle()
 
-generate_solution(bo)
-for i in range(9):
-    for j in range(9):
-        print(bo[i][j], end=' ')
-    print()    
-
-remove(bo)
-print("\n\n\n\n\n")
 
 for i in range(9):
     for j in range(9):
@@ -63,7 +60,4 @@ for i in range(9):
         print(bo[i][j], end=' ')
     print()    
 
-
-a = [1, 2, 3, 4, 5, 6, 2, 8, 9]
-print(len(set(a)))
 
