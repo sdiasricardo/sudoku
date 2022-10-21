@@ -2,6 +2,8 @@ from termios import CLOCAL
 import pygame
 from sudokusolver import solve, valid
 from sudokugenerator import generate_puzzle, remove
+pygame.font.init()
+
 
 RED, BLACK, WHITE, GRAY, BLUE = (255, 0, 0), (0, 0, 0), (255, 255, 255), (128, 128, 128), (140, 150, 157)
 WIDTH, HEIGHT = 900, 900
@@ -49,8 +51,7 @@ class Tile():
         self.height = height # Height of Board
 
     def draw(self, window):
-        font = pygame.font.SysFont("monospace", 40)
-
+        # Defining each tile gap and coordinate (coordinates are set to be on top left coorner)
         gap = self.width/9
         x = self.col * gap
         y = self.row * gap
@@ -58,7 +59,21 @@ class Tile():
         if self.selected:
             pygame.draw.rect(window, RED, (x, y, gap, gap), 3)
 
-        if self.value ==
+        if self.value != 0:
+            fnt = pygame.font.SysFont("comicsans", 40)
+            for i in self.temp:
+                lin = (i-1)%3
+                col = (i-1)// 3
+                text = fnt.render(str(i), 1, GRAY)
+                WINDOW.blit(text, (x + ((2*lin + 1)*gap/6 - text.get_width()/2), y + ((2*col + 1)*gap/6 - text.get_height()/2)))
+        else:
+            fnt = pygame.font.SysFont("comicsans", 90)
+            text = fnt.render(str(i), 1, BLACK)
+            WINDOW.blit(text, (x + (gap/2 - text.get_width()/2), y + (gap/2 - text.get_height()/2)))
+
+
+
+        
 
 
         
@@ -82,9 +97,16 @@ def main():
             pygame.draw.line(WINDOW, BLACK, (0, i*gap), (WIDTH, i*gap),thick) 
             pygame.draw.line(WINDOW, BLACK, (i*gap, 0), (i*gap, HEIGHT), thick)
 
+    fnt = pygame.font.SysFont("comicsans", 40)
 
-
+    temp = [1,2,3,6,7,8]
+    for i in temp:
+        lin = (i-1)%3
+        col = (i-1)// 3
+        text = fnt.render(str(i), 1, GRAY)
+        WINDOW.blit(text, (2*gap + ((2*lin + 1)*gap/6 - text.get_width()/2), 1*gap + ((2*col + 1)*gap/6 - text.get_height()/2)))
     pygame.display.update()
+
     while run:
         clock.tick(60)
         for event in pygame.event.get():
