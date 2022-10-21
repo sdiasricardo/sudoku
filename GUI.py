@@ -34,7 +34,14 @@ class Board():
             else:
                 thick = 1
             pygame.draw.line(window, BLACK, (0, i*gap), (self.width, i*gap),thick) 
-            pygame.draw.line(window, BLACK, (i*gap, 0), (i*gap, self.lenght), thick)
+            pygame.draw.line(window, BLACK, (i*gap, 0), (i*gap, self.height), thick)
+        
+        # Draing each tile
+        for i in range(9):
+            for j in range(9):
+                self.tiles[i][j].draw(window)
+        
+        pygame.display.update()
 
 
 
@@ -50,6 +57,7 @@ class Tile():
         self.width = width # Width of Board
         self.height = height # Height of Board
 
+    
     def draw(self, window):
         # Defining each tile gap and coordinate (coordinates are set to be on top left coorner)
         gap = self.width/9
@@ -59,7 +67,7 @@ class Tile():
         if self.selected:
             pygame.draw.rect(window, RED, (x, y, gap, gap), 3)
 
-        if self.value != 0:
+        if self.value == 0:
             fnt = pygame.font.SysFont("comicsans", 40)
             for i in self.temp:
                 lin = (i-1)%3
@@ -68,8 +76,23 @@ class Tile():
                 WINDOW.blit(text, (x + ((2*lin + 1)*gap/6 - text.get_width()/2), y + ((2*col + 1)*gap/6 - text.get_height()/2)))
         else:
             fnt = pygame.font.SysFont("comicsans", 90)
-            text = fnt.render(str(i), 1, BLACK)
+            text = fnt.render(str(self.value), 1, BLACK)
             WINDOW.blit(text, (x + (gap/2 - text.get_width()/2), y + (gap/2 - text.get_height()/2)))
+    
+
+    def setValue(self, value):
+        self.value = value
+
+    def addTemp(self, value):
+        if len(self.temp) > 0:
+            for i in range(len(self.temp)):
+                if self.temp[i] > value:
+                    self.temp.insert(i, value)
+                elif i == len(self.temp) - 1:
+                    self.temp.append(value)
+        else:
+            self.temp.append(value)
+
 
 
 
@@ -87,24 +110,12 @@ def main():
     clock = pygame.time.Clock()
     WINDOW.fill((255, 255, 255))
     pygame.display.update()
-    pygame.draw.rect(WINDOW, BLACK, (0, 0, WIDTH, HEIGHT), 4)
     gap = WIDTH/9
-    for i in range(1, 9):
-            if i % 3 == 0:
-                thick = 4
-            else:
-                thick = 1
-            pygame.draw.line(WINDOW, BLACK, (0, i*gap), (WIDTH, i*gap),thick) 
-            pygame.draw.line(WINDOW, BLACK, (i*gap, 0), (i*gap, HEIGHT), thick)
 
-    fnt = pygame.font.SysFont("comicsans", 40)
+    bo = Board(900, 900)
+    bo.tiles[1][1].selected = True
+    bo.draw_grid(WINDOW)
 
-    temp = [1,2,3,6,7,8]
-    for i in temp:
-        lin = (i-1)%3
-        col = (i-1)// 3
-        text = fnt.render(str(i), 1, GRAY)
-        WINDOW.blit(text, (2*gap + ((2*lin + 1)*gap/6 - text.get_width()/2), 1*gap + ((2*col + 1)*gap/6 - text.get_height()/2)))
     pygame.display.update()
 
     while run:
