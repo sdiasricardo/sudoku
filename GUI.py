@@ -20,7 +20,7 @@ class Board():
     def __init__(self, width, height):
         self.width = width # Width of Board
         self.height = height # Height of Board
-        self.tiles = [[Tile(self.board[i][j], i, j, width, height) for j in range(9)] for i in range(9)] # Creating each tile
+        self.tiles = [[Tile(self.board[i][j], i, j) for j in range(9)] for i in range(9)] # Creating each tile
 
 
     def draw_grid(self, window):
@@ -39,7 +39,7 @@ class Board():
         # Draing each tile
         for i in range(9):
             for j in range(9):
-                self.tiles[i][j].draw(window)
+                self.tiles[i][j].draw(window, self.width)
         
         pygame.display.update()
 
@@ -48,19 +48,17 @@ class Board():
 
 
 class Tile():
-    def __init__(self, value, row, column, width, height):
+    def __init__(self, value, row, column):
         self.row = row # Tile Row
         self.col = column # Tile column
         self.value = value # Tile value (0 = empty)
         self.temp = [] # Possibilities for the tile
         self.selected = False
-        self.width = width # Width of Board
-        self.height = height # Height of Board
-
     
-    def draw(self, window):
+
+    def draw(self, window, width):
         # Defining each tile gap and coordinate (coordinates are set to be on top left coorner)
-        gap = self.width/9
+        gap = width/9
         x = self.col * gap
         y = self.row * gap
 
@@ -83,6 +81,7 @@ class Tile():
     def setValue(self, value):
         self.value = value
 
+
     def addTemp(self, value):
         if len(self.temp) > 0:
             for i in range(len(self.temp)):
@@ -92,14 +91,6 @@ class Tile():
                     self.temp.append(value)
         else:
             self.temp.append(value)
-
-
-
-
-        
-
-
-        
 
 
 
@@ -114,6 +105,10 @@ def main():
 
     bo = Board(900, 900)
     bo.tiles[1][1].selected = True
+    bo.tiles[2][4].addTemp(2)
+    bo.tiles[2][4].addTemp(3)
+    bo.tiles[2][4].addTemp(9)
+    bo.tiles[2][4].addTemp(8)
     bo.draw_grid(WINDOW)
 
     pygame.display.update()
