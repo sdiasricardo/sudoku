@@ -12,7 +12,6 @@ WINDOW = pygame.display.set_mode((WIDTH, HEIGHT + 50))
 pygame.display.set_caption("Sudoku")
 
 
-
 class Board():
     board = generate_puzzle() # Board that will store the initial puzzle
     selected = None # Last tile selected
@@ -24,6 +23,7 @@ class Board():
 
 
     def draw_grid(self, window):
+        WINDOW.fill((255, 255, 255))
         gap = self.width/9
         pygame.draw.rect(window, BLACK, (0, 0, self.width, self.height), 4)
         
@@ -42,6 +42,26 @@ class Board():
                 self.tiles[i][j].draw(window, self.width)
         
         pygame.display.update()
+
+
+    # Getting row and column from mouse click
+    def click(self, pos):
+        if(pos[1] < self.height and pos[0] < self.width):
+            gap = self.width/9
+            x = pos[0] // gap
+            y = pos[1] // gap
+            return (int(y), int(x))
+        return None
+
+    
+    def select(self, x, y):
+        if(self.selected != None):
+            self.tiles[self.selected[0]][self.selected[1]].selected = False
+        
+        
+        self.tiles[x][y].selected = True
+        self.selected = (x, y)
+
 
 
 
@@ -65,6 +85,7 @@ class Tile():
         if self.selected:
             pygame.draw.rect(window, RED, (x, y, gap, gap), 3)
 
+        # Drawing the final value, if it exists
         if self.value == 0:
             fnt = pygame.font.SysFont("comicsans", 40)
             for i in self.temp:
@@ -72,6 +93,8 @@ class Tile():
                 col = (i-1)// 3
                 text = fnt.render(str(i), 1, GRAY)
                 WINDOW.blit(text, (x + ((2*lin + 1)*gap/6 - text.get_width()/2), y + ((2*col + 1)*gap/6 - text.get_height()/2)))
+        
+        # Drawing possibilities sketch
         else:
             fnt = pygame.font.SysFont("comicsans", 90)
             text = fnt.render(str(self.value), 1, BLACK)
@@ -82,15 +105,19 @@ class Tile():
         self.value = value
 
 
+    # Adding or removing possibilities (sketch)
     def addTemp(self, value):
         if len(self.temp) > 0:
             for i in range(len(self.temp)):
                 if self.temp[i] > value:
                     self.temp.insert(i, value)
+                elif self.temp[i] == value:
+                    self.temp.remove(value)
                 elif i == len(self.temp) - 1:
                     self.temp.append(value)
         else:
             self.temp.append(value)
+
 
 
 
@@ -104,21 +131,63 @@ def main():
     gap = WIDTH/9
 
     bo = Board(900, 900)
-    bo.tiles[1][1].selected = True
-    bo.tiles[2][4].addTemp(2)
-    bo.tiles[2][4].addTemp(3)
-    bo.tiles[2][4].addTemp(9)
-    bo.tiles[2][4].addTemp(8)
     bo.draw_grid(WINDOW)
 
     pygame.display.update()
 
     while run:
-        clock.tick(60)
         for event in pygame.event.get():
+            keys = pygame.key.get_pressed()
+            num = None
+
             if event.type == pygame.QUIT:
                 run = False
-        
+            if event.type == pygame.KEYDOWN:
+                if keys[pygame.K_1]:
+                    num = 1
+                elif keys[pygame.K_2]:
+                    num = 2
+                elif keys[pygame.K_3]:
+                    num = 3
+                elif keys[pygame.K_4]:
+                    num = 4
+                elif keys[pygame.K_5]:
+                    num = 5
+                elif keys[pygame.K_6]:
+                    num = 6
+                elif keys[pygame.K_7]:
+                    num = 7
+                elif keys[pygame.K_8]:
+                    num = 8
+                elif keys[pygame.K_9]:
+                    num = 9
+
+                if keys[pygame.K_LSHIFT] and num != None and bo.selected:
+                    bo.tiles[bo.selected[0]][bo.selected[1]].addTemp(num)
+                    num = None
+                
+                    
+                    
+
+
+            # Mouse click
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                clicked = bo.click(pos)
+
+                if clicked:
+                    bo.select(clicked[0], clicked[1])
+                    num = None
+
+            
+
+
+
+
+            bo.draw_grid(WINDOW)
+            pygame.display.update()
+                
+                 
 
     pygame.quit()
 
