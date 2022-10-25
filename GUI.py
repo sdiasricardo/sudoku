@@ -1,4 +1,3 @@
-from termios import CLOCAL
 import pygame
 from sudokusolver import solve, valid
 from sudokugenerator import generate_puzzle, remove
@@ -11,6 +10,18 @@ FPS = 60
 WINDOW = pygame.display.set_mode((WIDTH, HEIGHT + 50))
 pygame.display.set_caption("Sudoku")
 
+def mat(mat):
+    for i in mat:
+        for j in i:
+            print(j, end=' ')
+        print()   
+
+
+def check(mat1, mat2):
+    for i in range(9):
+        for j in range(9):
+            if(mat1[i][j] != mat2[i][j]):
+                return (i, j)
 
 class Board():
     board = generate_puzzle() # Board that will store the initial puzzle
@@ -20,6 +31,7 @@ class Board():
         self.width = width # Width of Board
         self.height = height # Height of Board
         self.tiles = [[Tile(self.board[i][j], i, j) for j in range(9)] for i in range(9)] # Creating each tile
+        self.empty = 63
 
 
     def draw_grid(self, window):
@@ -61,6 +73,28 @@ class Board():
         
         self.tiles[x][y].selected = True
         self.selected = (x, y)
+
+
+    def trySolution(self, val, x, y):
+        if(valid(self.board, val, (x, y))):
+            copy = []
+
+            for i in range(9):
+                aux = []
+                for j in range(9):
+                    aux.append(self.board[i][j])
+                copy.append(aux)
+            
+            copy[x][y] = val
+            if(solve(copy)):
+                self.board[x][y] = val
+                self.tiles[x][y].value = val
+                self.tiles[x][y].temp.clear()
+                return True
+            return False
+        
+        return False
+
 
 
 
@@ -111,10 +145,13 @@ class Tile():
             for i in range(len(self.temp)):
                 if self.temp[i] > value:
                     self.temp.insert(i, value)
+                    break
                 elif self.temp[i] == value:
                     self.temp.remove(value)
+                    break
                 elif i == len(self.temp) - 1:
                     self.temp.append(value)
+                    break
         else:
             self.temp.append(value)
 
@@ -126,7 +163,7 @@ class Tile():
 def main():
     run = True
     clock = pygame.time.Clock()
-    WINDOW.fill((255, 255, 255))
+    WINDOW.fill(WHITE)
     pygame.display.update()
     gap = WIDTH/9
 
@@ -134,7 +171,8 @@ def main():
     bo.draw_grid(WINDOW)
 
     pygame.display.update()
-
+    strikes = 0
+    end = False
     while run:
         for event in pygame.event.get():
             keys = pygame.key.get_pressed()
@@ -142,50 +180,84 @@ def main():
 
             if event.type == pygame.QUIT:
                 run = False
-            if event.type == pygame.KEYDOWN:
-                if keys[pygame.K_1]:
-                    num = 1
-                elif keys[pygame.K_2]:
-                    num = 2
-                elif keys[pygame.K_3]:
-                    num = 3
-                elif keys[pygame.K_4]:
-                    num = 4
-                elif keys[pygame.K_5]:
-                    num = 5
-                elif keys[pygame.K_6]:
-                    num = 6
-                elif keys[pygame.K_7]:
-                    num = 7
-                elif keys[pygame.K_8]:
-                    num = 8
-                elif keys[pygame.K_9]:
-                    num = 9
 
-                if keys[pygame.K_LSHIFT] and num != None and bo.selected:
-                    bo.tiles[bo.selected[0]][bo.selected[1]].addTemp(num)
-                    num = None
-                
+            if not end:
+                # Key pressed
+                if event.type == pygame.KEYDOWN:
+                    if keys[pygame.K_1]:
+                        num = 1
+                    elif keys[pygame.K_2]:
+                        num = 2
+                    elif keys[pygame.K_3]:
+                        num = 3
+                    elif keys[pygame.K_4]:
+                        num = 4
+                    elif keys[pygame.K_5]:
+                        num = 5
+                    elif keys[pygame.K_6]:
+                        num = 6
+                    elif keys[pygame.K_7]:
+                        num = 7
+                    elif keys[pygame.K_8]:
+                        num = 8
+                    elif keys[pygame.K_9]:
+                        num = 9
+
+                    # Shift + number
+                    if keys[pygame.K_LSHIFT] and num != None and bo.selected:
+                        bo.tiles[bo.selected[0]][bo.selected[1]].addTemp(num)
+                        num = None
                     
+                    # Only number
+                    elif num != None and bo.selected:
+                        if bo.trySolution(num, bo.selected[0], bo.selected[1]):
+                            if bo.empty == 1:
+                                # Ganhou
+                                fnt = pygame.font.SysFont("comicsans", 120)
+                                text = fnt.render("You won!", 1, BLACK)
+                                WINDOW.fill(WHITE)
+                                WINDOW.blit(text, ((bo.width/2 - text.get_width()/2), (bo.height/2 - text.get_height()/2)))
+                                pygame.display.update()
+                                end = True
+                            else:
+                                bo.empty -= 1
+                        
+                        else:
+                            if strikes <= 2:
+                                strikes += 1
+                            else:
+                                fnt = pygame.font.SysFont("comicsans", 120)
+                                text = fnt.render("You lost!", 1, BLACK)
+                                WINDOW.fill(WHITE)
+                                WINDOW.blit(text, ((bo.width/2 - text.get_width()/2), (bo.height/2 - text.get_height()/2)))
+                                pygame.display.update()
+                                end = True
+                        
+
+                if not end:
+                    # Mouse click
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        pos = pygame.mouse.get_pos()
+                        clicked = bo.click(pos)
+
+                        if clicked:
+                            bo.select(clicked[0], clicked[1])
+                            num = None
                     
 
 
-            # Mouse click
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-                clicked = bo.click(pos)
-
-                if clicked:
-                    bo.select(clicked[0], clicked[1])
-                    num = None
-
-            
-
-
-
-
-            bo.draw_grid(WINDOW)
-            pygame.display.update()
+                    
+                    fnt = pygame.font.SysFont("comicsans", 50)
+                    
+                    # Draw Grid
+                    bo.draw_grid(WINDOW)
+                    
+                    # Draw Strikes
+                    text1 = text = fnt.render("Errors: ", 1, BLACK)
+                    WINDOW.blit(text, (20, HEIGHT + 25 - text1.get_height()/2))
+                    text = fnt.render("X "*strikes, 1, RED)
+                    WINDOW.blit(text, (20 + text1.get_width(), HEIGHT + 25 - text.get_height()/2))
+                    pygame.display.update()
                 
                  
 

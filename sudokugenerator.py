@@ -39,25 +39,6 @@ def generate_puzzle():
     bo = [[0 for i in range(9)] for i in range(9)]
     generate_solution(bo)
     remove(bo)
-    return bo
-
-bo = generate_puzzle()
-
-
-for i in range(9):
-    for j in range(9):
-        print(bo[i][j], end=' ')
-    print()
-
-
-print("\n\n\n\n\n")
-
-solve(bo)
-
-
-for i in range(9):
-    for j in range(9):
-        print(bo[i][j], end=' ')
-    print()    
+    return bo 
 
 
