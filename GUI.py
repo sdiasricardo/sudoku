@@ -1,6 +1,7 @@
 import pygame
 from sudokusolver import solve, valid
 from sudokugenerator import generate_puzzle, remove
+import time
 pygame.font.init()
 
 
@@ -76,6 +77,8 @@ class Board():
 
 
     def trySolution(self, val, x, y):
+        if self.board[x][y] != 0:
+            return True
         if(valid(self.board, val, (x, y))):
             copy = []
 
@@ -211,16 +214,17 @@ def main():
                     # Only number
                     elif num != None and bo.selected:
                         if bo.trySolution(num, bo.selected[0], bo.selected[1]):
-                            if bo.empty == 1:
-                                # Ganhou
-                                fnt = pygame.font.SysFont("comicsans", 120)
-                                text = fnt.render("You won!", 1, BLACK)
-                                WINDOW.fill(WHITE)
-                                WINDOW.blit(text, ((bo.width/2 - text.get_width()/2), (bo.height/2 - text.get_height()/2)))
-                                pygame.display.update()
-                                end = True
-                            else:
-                                bo.empty -= 1
+                            if(bo.tiles[bo.selected[0]][bo.selected[1]].value != 0):
+                                if bo.empty == 1:
+                                    # Ganhou
+                                    fnt = pygame.font.SysFont("comicsans", 120)
+                                    text = fnt.render("You won!", 1, BLACK)
+                                    WINDOW.fill(WHITE)
+                                    WINDOW.blit(text, ((bo.width/2 - text.get_width()/2), (bo.height/2 - text.get_height()/2)))
+                                    pygame.display.update()
+                                    end = True
+                                else:
+                                    bo.empty -= 1
                         
                         else:
                             if strikes <= 2:
@@ -257,7 +261,10 @@ def main():
                     WINDOW.blit(text, (20, HEIGHT + 25 - text1.get_height()/2))
                     text = fnt.render("X "*strikes, 1, RED)
                     WINDOW.blit(text, (20 + text1.get_width(), HEIGHT + 25 - text.get_height()/2))
+            
                     pygame.display.update()
+
+
                 
                  
 
